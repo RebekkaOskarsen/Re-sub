@@ -28,7 +28,6 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 
-
 int main()
 {
 	glfwInit(); //Initialize GLFW
@@ -53,10 +52,10 @@ int main()
 
 	Shader shaderProgram("default.vert", "default.frag");
 
-
 	Surface surface;
 
 	Player player1;
+
 	
 	while (!glfwWindowShouldClose(window)) // Check if the window should close
 	{
@@ -82,7 +81,8 @@ int main()
 		glm::mat4 projection = glm::mat4(1.0f);
 
 		model = glm::rotate(model, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		view = glm::translate(view, glm::vec3(-3.0f, -2.0f, -10.0f));
+		//view = glm::translate(view, glm::vec3(-3.0f, -2.0f, -10.0f));
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
@@ -117,6 +117,16 @@ void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	const float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT)
