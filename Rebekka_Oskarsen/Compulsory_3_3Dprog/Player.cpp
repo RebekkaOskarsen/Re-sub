@@ -6,8 +6,7 @@ Player::Player()
     VAO = 0;
     EBO = 0;
 
-	//Cube
-	GLfloat charactervertices[] =
+	GLfloat playervertices[] =
 	{
 		//positions   /		 colors //
 		// Front face
@@ -47,7 +46,9 @@ Player::Player()
 		0.2f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-right
 	};
 
-	GLuint characterindices[] =
+	memcpy(this->playervertices, playervertices, sizeof(playervertices));
+
+	GLuint playerindices[] =
 	{
 		// Front face
 		0, 1, 2,
@@ -76,26 +77,27 @@ Player::Player()
 	};
 
 	//Buffers/arrays
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
 
-    glBindVertexArray(VAO);
+	glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(charactervertices), charactervertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(playervertices), playervertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(characterindices), characterindices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(playerindices), playerindices, GL_STATIC_DRAW);
 
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	// Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 
-    glBindVertexArray(0);
+	glBindVertexArray(0);
+
 }
 
 Player::~Player()
@@ -105,21 +107,39 @@ Player::~Player()
     glDeleteBuffers(1, &EBO);
 }
 
-void Player::MovePlayer(GLFWwindow* window, float deltaTime)
+void Player::MovePlayer(GLFWwindow* window)
 {
-
+	//Player movement controls
 	const float playerSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		position += playerSpeed * front;
+	{
+		for (int i = 2; i < 144; i += 6)
+			playervertices[i] -= playerSpeed;
+	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		position -= playerSpeed * front;
+	{
+		for (int i = 2; i < 144; i += 6)
+			playervertices[i] += playerSpeed;
+	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		position -= playerSpeed * right;
+	{
+		for (int i = 0; i < 144; i += 6)
+			playervertices[i] -= playerSpeed;
+	}
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		position += playerSpeed * right;
+	{
+		for (int i = 0; i < 144; i += 6)
+			playervertices[i] += playerSpeed;
+	}
+
+	// Bind VBO and upload updated vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(playervertices), playervertices, GL_STATIC_DRAW);
+	
+
 }
 
-void Player::DrawPlayer(GLuint shaderProgram, glm::mat4 view, glm::mat4 projection)
+void Player::DrawPlayer()
 {
 
 	glBindVertexArray(VAO);

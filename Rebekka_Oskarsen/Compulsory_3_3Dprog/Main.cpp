@@ -145,6 +145,9 @@ int main()
 
 	glBindVertexArray(0);
 
+	float distanceFromPlayer = 3.0f; // Adjust this value to change the distance from player
+	glm::vec3 cameraPosOffset = glm::vec3(0.0f, 0.0f, 1.0f); // Offset behind the player
+
 
 	while (!glfwWindowShouldClose(window)) // Check if the window should close
 	{
@@ -156,7 +159,6 @@ int main()
 		//Input
 		processInput(window);
 
-
 		//Render
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -164,15 +166,28 @@ int main()
 		//Activate the shader
 		shaderProgram.Activate();
 
-
 		//Camera/view transformation
 		glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
 
+		// Calculate the target position for the camera (behind the player)
+		glm::vec3 targetPos = glm::vec3(playervertices[0], playervertices[1], playervertices[2]);
+
+		targetPos.y += 1.0f;
+
+		// Calculate the new position for the camera
+		glm::vec3 cameraPos = targetPos - glm::normalize(cameraFront) * distanceFromPlayer;
+
+		// Adjust the camera position to maintain a consistent height above the surface
+		cameraPos.y = cameraPosOffset.y; // Set the camera to a consistent height above the player
+
+		// Adjust the camera position to maintain a consistent distance from the player
+		cameraPos -= glm::normalize(cameraFront) * distanceFromPlayer;
+
 		model = glm::rotate(model, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		//view = glm::translate(view, glm::vec3(-3.0f, -2.0f, -10.0f));
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		view = glm::lookAt(cameraPos, targetPos, cameraUp);
 		projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
@@ -213,16 +228,16 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	//Camera movement controls
-	const float cameraSpeed = 2.5f * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	////Camera movement controls
+	//const float cameraSpeed = 2.5f * deltaTime;
+	//if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	//	cameraPos += cameraSpeed * cameraFront;
+	//if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	//	cameraPos -= cameraSpeed * cameraFront;
+	//if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	//	cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	//if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	//	cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 
 	//Player movement controls
 	const float playerSpeed = 2.5f * deltaTime;

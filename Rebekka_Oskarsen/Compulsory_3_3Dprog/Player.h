@@ -12,19 +12,17 @@ public:
 	Player();
 	~Player();
 
-	void MovePlayer(GLFWwindow* window, float deltaTime);
+	void MovePlayer(GLFWwindow* window);
+	void DrawPlayer();
 
-	void DrawPlayer(GLuint shaderProgram, glm::mat4 view, glm::mat4 projection);
-
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 up = glm::vec3(1.0f, 0.0f, 0.0f);
-	glm::vec3 right = glm::vec3(1.0f, 0.0f, 0.0f);
+	float deltaTime = 0.0f;	// time between current frame and last frame
 
 private:
 	GLuint VAO;
 	GLuint VBO;
 	GLuint EBO;
+
+	GLfloat playervertices[144];
 };
 
 #endif // !PLAYER_CLASS_H
