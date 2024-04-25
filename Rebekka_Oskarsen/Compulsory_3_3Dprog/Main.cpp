@@ -14,6 +14,8 @@ using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT);
 void processInput(GLFWwindow* window);
+glm::vec3 calculateBarycentricCoordinates(glm::vec3 point, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2);
+
 
 //Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 800;
@@ -223,6 +225,27 @@ int main()
 	return 0;
 }
 
+glm::vec3 calculateBarycentricCoordinates(glm::vec3 point, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2) {
+	glm::vec3 v0v1 = v1 - v0;
+	glm::vec3 v0v2 = v2 - v0;
+	glm::vec3 v0p = point - v0;
+
+	float d00 = glm::dot(v0v1, v0v1);
+	float d01 = glm::dot(v0v1, v0v2);
+	float d11 = glm::dot(v0v2, v0v2);
+	float d20 = glm::dot(v0p, v0v1);
+	float d21 = glm::dot(v0p, v0v2);
+
+	float denom = d00 * d11 - d01 * d01;
+
+	float v = (d11 * d20 - d01 * d21) / denom;
+	float w = (d00 * d21 - d01 * d20) / denom;
+	float u = 1.0f - v - w;
+
+	return glm::vec3(u, v, w);
+}
+
+
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -241,6 +264,12 @@ void processInput(GLFWwindow* window)
 
 	//Player movement controls
 	const float playerSpeed = 2.5f * deltaTime;
+
+	// Define the vertices of the triangle
+	glm::vec3 v0 = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 v1 = glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 v2 = glm::vec3(0.5f, 1.0f, 0.0f);
+
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
 		for (int i = 2; i < 144; i += 6)
