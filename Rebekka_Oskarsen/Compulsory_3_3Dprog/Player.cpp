@@ -107,29 +107,16 @@ Player::~Player()
 
 void Player::MovePlayer(GLFWwindow* window, float deltaTime)
 {
-    float speed = 2.5f * deltaTime; // Adjust the speed as needed
-    glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f); // Set a default forward vector
-    glm::vec3 right = glm::vec3(1.0f, 0.0f, 0.0f); // Set a default right vector
 
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        position += forward * speed;
-        
-	}
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        position -= forward * speed;
-	}
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        position -= right * speed;
-	}
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        position += right * speed;
-	}
-   
+	const float playerSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		position += playerSpeed * front;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		position -= playerSpeed * front;
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		position -= playerSpeed * right;
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		position += playerSpeed * right;
 }
 
 void Player::DrawPlayer(GLuint shaderProgram, glm::mat4 view, glm::mat4 projection)

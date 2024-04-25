@@ -8,13 +8,12 @@
 
 #include "shaderClass.h"
 #include "Surface.h"
-#include "Player.h"
 
 
 using namespace std;
 
-void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT); 
-void processInput(GLFWwindow* window); 
+void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT);
+void processInput(GLFWwindow* window);
 
 //Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 800;
@@ -23,16 +22,84 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-// timing
+//Timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+//Cube
+GLfloat playervertices[] =
+{
+	//positions   /		 colors //
+	// Front face
+   0.2f, 0.0f, 0.1f,    0.0f, 0.0f, 1.0f, // Bottom-left
+	0.4f, 0.0f, 0.1f,    0.0f, 0.0f, 1.0f, // Bottom-right
+	0.4f, 0.2f, 0.1f,    0.0f, 0.0f, 1.0f, // Top-right
+	0.2f, 0.2f, 0.1f,    0.0f, 0.0f, 1.0f, // Top-left
+
+	// Back face
+	0.2f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-left
+	0.4f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-right
+	0.4f, 0.2f, -0.1f,   0.0f, 0.0f, 1.0f, // Top-right
+	0.2f, 0.2f, -0.1f,   0.0f, 0.0f, 1.0f, // Top-left
+
+	// Top face
+	0.4f, 0.2f, 0.1f,   0.0f, 0.0f, 1.0f, // Top-right
+	0.2f, 0.2f, 0.1f,   0.0f, 0.0f, 1.0f, // Top-left
+	0.4f, 0.2f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-right
+	0.2f, 0.2f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-left
+
+	// Bottom face
+	0.2f, 0.0f, 0.1f,   0.0f, 0.0f, 1.0f, // Top-left
+	0.4f, 0.0f, 0.1f,   0.0f, 0.0f, 1.0f, // Top-right
+	0.4f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-right
+	0.2f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-left
+
+	// Right face
+	0.4f, 0.0f, 0.1f,   0.0f, 0.0f, 1.0f, // Bottom-right
+	0.4f, 0.2f, 0.1f,   0.0f, 0.0f, 1.0f, // Top-right
+	0.4f, 0.2f, -0.1f,   0.0f, 0.0f, 1.0f, // Top-left
+	0.4f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-left
+
+	// Left face
+	0.2f, 0.0f, 0.1f,   0.0f, 0.0f, 1.0f, // Bottom-left
+	0.2f, 0.2f, 0.1f,   0.0f, 0.0f, 1.0f, // Top-left
+	0.2f, 0.2f, -0.1f,   0.0f, 0.0f, 1.0f, // Top-right
+	0.2f, 0.0f, -0.1f,   0.0f, 0.0f, 1.0f, // Bottom-right
+};
+
+GLuint playerindices[] =
+{
+	// Front face
+	0, 1, 2,
+	2, 3, 0,
+
+	// Back face
+	4, 5, 6,
+	6, 7, 4,
+
+	// Top face
+	8, 9, 10,
+	10, 11, 8,
+
+	// Bottom face
+	12, 13, 14,
+	14, 15, 12,
+
+	// Right face
+	16, 17, 18,
+	18, 19, 16,
+
+	// Left face
+	20, 21, 22,
+	22, 23, 20
+
+};
 
 int main()
 {
 	glfwInit(); //Initialize GLFW
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -54,9 +121,31 @@ int main()
 
 	Surface surface;
 
-	Player player1;
 
-	
+	//Buffers/arrays
+	GLuint VAO, VBO, EBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(playervertices), playervertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(playerindices), playerindices, GL_STATIC_DRAW);
+
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	// Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+
+
 	while (!glfwWindowShouldClose(window)) // Check if the window should close
 	{
 		//Calculate delta time
@@ -66,6 +155,7 @@ int main()
 
 		//Input
 		processInput(window);
+
 
 		//Render
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -99,7 +189,9 @@ int main()
 		surface.DrawSurface();
 
 		//Render the player
-		player1.DrawPlayer(shaderProgram.ID, view, projection);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
 
 		//Swap the buffers
 		glfwSwapBuffers(window);
@@ -107,6 +199,9 @@ int main()
 	}
 
 	shaderProgram.Delete();
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -118,7 +213,8 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	const float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
+	//Camera movement controls
+	const float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		cameraPos += cameraSpeed * cameraFront;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -127,6 +223,31 @@ void processInput(GLFWwindow* window)
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
+	//Player movement controls
+	const float playerSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		for (int i = 2; i < 144; i += 6)
+			playervertices[i] -= playerSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		for (int i = 2; i < 144; i += 6)
+			playervertices[i] += playerSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	{
+		for (int i = 0; i < 144; i += 6)
+			playervertices[i] -= playerSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	{
+		for (int i = 0; i < 144; i += 6)
+			playervertices[i] += playerSpeed;
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(playervertices), playervertices, GL_STATIC_DRAW);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT)
