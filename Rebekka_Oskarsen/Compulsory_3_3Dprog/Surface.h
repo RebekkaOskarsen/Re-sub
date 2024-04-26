@@ -4,6 +4,8 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
+extern GLfloat surfacevertices[];
+
 class Surface
 {
 	public:
@@ -11,6 +13,9 @@ class Surface
 		~Surface();
 
 		void DrawSurface();
+
+		
+
 
 	private:
 		GLuint VAO, VBO, EBO;

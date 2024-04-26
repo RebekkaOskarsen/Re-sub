@@ -157,7 +157,7 @@ Surface::Surface()
 
 	glBindVertexArray(0);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Draw in wireframe
+	
 }
 
 Surface::~Surface()

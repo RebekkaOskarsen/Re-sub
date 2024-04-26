@@ -8,14 +8,13 @@
 
 #include "shaderClass.h"
 #include "Surface.h"
+#include "Object.h"
 
 
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT);
 void processInput(GLFWwindow* window);
-glm::vec3 calculateBarycentricCoordinates(glm::vec3 point, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2);
-
 
 //Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 800;
@@ -25,8 +24,9 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 //Timing
-float deltaTime = 0.0f;	// time between current frame and last frame
+float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
 
 //Cube
 GLfloat playervertices[] =
@@ -97,6 +97,7 @@ GLuint playerindices[] =
 
 };
 
+
 int main()
 {
 	glfwInit(); //Initialize GLFW
@@ -123,6 +124,9 @@ int main()
 
 	Surface surface;
 
+	Object object1(0.0f, 0.0f, 0.0f); //Position at origin
+	Object object2(2.0f, 0.0f, 0.0f);
+	Object object3(1.0f, 0.0f, -2.0f); 
 
 	//Buffers/arrays
 	GLuint VAO, VBO, EBO;
@@ -138,20 +142,23 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(playerindices), playerindices, GL_STATIC_DRAW);
 
-	// Position attribute
+	//position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
-	// Color attribute
+	//color attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 
+
 	glBindVertexArray(0);
 
-	float distanceFromPlayer = 3.0f; // Adjust this value to change the distance from player
-	glm::vec3 cameraPosOffset = glm::vec3(0.0f, 0.0f, 1.0f); // Offset behind the player
+	float distanceFromPlayer = 3.0f; //Adjust this value to change the distance from player
+	glm::vec3 cameraPosOffset = glm::vec3(0.0f, 0.0f, 1.0f); //Offset behind the player to maintain a consistent height
 
+	//Wireframe mode
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	while (!glfwWindowShouldClose(window)) // Check if the window should close
+	while (!glfwWindowShouldClose(window))
 	{
 		//Calculate delta time
 		float currentFrame = static_cast<float>(glfwGetTime());
@@ -205,6 +212,11 @@ int main()
 		//Render the surface
 		surface.DrawSurface();
 
+		//Render the object
+		object1.DrawObject();
+		object2.DrawObject();
+		object3.DrawObject();
+
 		//Render the player
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -225,25 +237,7 @@ int main()
 	return 0;
 }
 
-glm::vec3 calculateBarycentricCoordinates(glm::vec3 point, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2) {
-	glm::vec3 v0v1 = v1 - v0;
-	glm::vec3 v0v2 = v2 - v0;
-	glm::vec3 v0p = point - v0;
-
-	float d00 = glm::dot(v0v1, v0v1);
-	float d01 = glm::dot(v0v1, v0v2);
-	float d11 = glm::dot(v0v2, v0v2);
-	float d20 = glm::dot(v0p, v0v1);
-	float d21 = glm::dot(v0p, v0v2);
-
-	float denom = d00 * d11 - d01 * d01;
-
-	float v = (d11 * d20 - d01 * d21) / denom;
-	float w = (d00 * d21 - d01 * d20) / denom;
-	float u = 1.0f - v - w;
-
-	return glm::vec3(u, v, w);
-}
+glm::vec3 playerPosition(0.0f);
 
 
 void processInput(GLFWwindow* window)
@@ -251,25 +245,8 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	////Camera movement controls
-	//const float cameraSpeed = 2.5f * deltaTime;
-	//if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	//	cameraPos += cameraSpeed * cameraFront;
-	//if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	//	cameraPos -= cameraSpeed * cameraFront;
-	//if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	//	cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	//if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	//	cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-
 	//Player movement controls
 	const float playerSpeed = 2.5f * deltaTime;
-
-	// Define the vertices of the triangle
-	glm::vec3 v0 = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 v1 = glm::vec3(1.0f, 0.0f, 0.0f);
-	glm::vec3 v2 = glm::vec3(0.5f, 1.0f, 0.0f);
-
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
 		for (int i = 2; i < 144; i += 6)
