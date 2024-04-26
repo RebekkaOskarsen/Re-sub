@@ -14,9 +14,6 @@ class Surface
 
 		void DrawSurface();
 
-		
-
-
 	private:
 		GLuint VAO, VBO, EBO;
 		
